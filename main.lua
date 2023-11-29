@@ -4,28 +4,17 @@ This is a stoka plugin
 @module koplugin.libby
 --]]
 --
-local ButtonDialog = require("ui/widget/buttondialog")
 local ConfirmBox = require("ui/widget/confirmbox")
-local Dispatcher = require("dispatcher") -- luacheck:ignore
-local util = require("util")
-local T = require("ffi/util").template
-local DocumentRegistry = require("document/documentregistry")
-local InfoMessage = require("ui/widget/infomessage")
 local MultiInputDialog = require("ui/widget/multiinputdialog")
-local InputDialog = require("ui/widget/inputdialog")
 local UIManager = require("ui/uimanager")
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local _ = require("gettext")
 local JSON = require("json")
-local Menu = require("ui/widget/menu")
-local Screen = require("device").screen
 local http = require("socket.http")
-local https = require("ssl.https")
+local NetworkMgr = require("ui/network/manager")
 local ltn12 = require("ltn12")
 local socket = require("socket")
 local socketutil = require("socketutil")
-local BD = require("ui/bidi")
-local ReaderUI = require("apps/reader/readerui")
 local logger = require("logger")
 local lfs = require("libs/libkoreader-lfs")
 
@@ -168,14 +157,14 @@ function Stoka:addToMainMenu(menu_items)
             {
                 text = _("Download New"),
                 keep_menu_open = false,
-                callback = function() self:download(false) end,
+                callback = function() NetworkMgr:runWhenOnline(function() self:download(false) end) end,
                 enabled_func = function() return not (self.stoka_token == "") end,
 
             },
             {
                 text = _("Redownload All"),
                 keep_menu_open = false,
-                callback = function() self:download(true) end,
+                callback = function() NetworkMgr:runWhenOnline(function()  self:download(true) end) end,
                 enabled_func = function() return not (self.stoka_token == "") end,
             },
         }
